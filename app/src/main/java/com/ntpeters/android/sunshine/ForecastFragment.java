@@ -1,10 +1,14 @@
 package com.ntpeters.android.sunshine;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -28,62 +32,31 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.forecastfragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_refresh) {
+            new FetchWeatherTask().execute();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
+
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-        String forecastJson = null;
-
-        String zipCode = "44124";
-        String responseType = "json";
-        String unitType = "metric";
-        int daysToRetrieve = 7;
-        String requestUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=" + zipCode +
-                "&mode=" + responseType +
-                "&units=" + unitType +
-                "&cnt=" + daysToRetrieve;
-
-        try {
-            URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=" + zipCode + "&mode=json&units=metric&cnt=" + daysToRetrieve);
-
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                forecastJson = null;
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                forecastJson = null;
-            }
-
-            forecastJson = buffer.toString();
-        } catch (java.io.IOException e) {
-            Log.e("ForecastFragment", "Error", e);
-            forecastJson = null;
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    Log.e("PlaceHolderFragment", "Error closing stream", e);
-                }
-            }
-        }
 
         String[] forecastsArray = {
                 "Today - Sunny - 88/63",
@@ -107,5 +80,67 @@ public class ForecastFragment extends Fragment {
         listView.setAdapter(adapter);
 
         return rootView;
+    }
+
+    public class FetchWeatherTask extends AsyncTask<Void, Void, Void> {
+
+        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+
+        protected Void doInBackground(Void... params) {
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            String forecastJson = null;
+
+            String zipCode = "44124";
+            String responseType = "json";
+            String unitType = "metric";
+            int daysToRetrieve = 7;
+            String requestUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=" + zipCode +
+                    "&mode=" + responseType +
+                    "&units=" + unitType +
+                    "&cnt=" + daysToRetrieve;
+
+            try {
+                URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=" + zipCode + "&mode=json&units=metric&cnt=" + daysToRetrieve);
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+                    return null;
+                }
+
+                forecastJson = buffer.toString();
+            } catch (java.io.IOException e) {
+                Log.e(LOG_TAG, "Error", e);
+                return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        Log.e(LOG_TAG, "Error closing stream", e);
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 }
