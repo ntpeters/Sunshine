@@ -1,6 +1,6 @@
 package com.ntpeters.android.sunshine;
 
-import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,10 +81,10 @@ public class ForecastFragment extends Fragment {
         AdapterView.OnItemClickListener clickListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String message = adapter.getItem(position).toString();
-                Context context = rootView.getContext();
-                Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-                toast.show();
+                String forecast = adapter.getItem(position).toString();
+                Intent detailsIntent = new Intent(getActivity(), DetailActivity.class);
+                detailsIntent.putExtra(Intent.EXTRA_TEXT, forecast);
+                startActivity(detailsIntent);
             }
         };
 
