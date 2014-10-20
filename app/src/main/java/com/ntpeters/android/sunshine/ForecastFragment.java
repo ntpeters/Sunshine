@@ -1,5 +1,6 @@
 package com.ntpeters.android.sunshine;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -13,8 +14,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,7 +68,7 @@ public class ForecastFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         FragmentActivity activity = getActivity();
         int list_item_layout_id = R.layout.list_item_forecast;
@@ -75,6 +78,18 @@ public class ForecastFragment extends Fragment {
 
         ListView listView = (ListView)rootView.findViewById(R.id.list_view);
         listView.setAdapter(adapter);
+
+        AdapterView.OnItemClickListener clickListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String message = adapter.getItem(position).toString();
+                Context context = rootView.getContext();
+                Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        };
+
+        listView.setOnItemClickListener(clickListener);
 
         return rootView;
     }
@@ -237,13 +252,15 @@ public class ForecastFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String[] strings) {
-            adapter.clear();
-            // Use addAll for HoneyComb or later
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                adapter.addAll(strings);
-            } else {
-                for (String entry : strings) {
-                    adapter.add(entry);
+            if (strings != null) {
+                adapter.clear();
+                // Use addAll for HoneyComb or later (better performance)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    adapter.addAll(strings);
+                } else {
+                    for (String entry : strings) {
+                        adapter.add(entry);
+                    }
                 }
             }
         }
