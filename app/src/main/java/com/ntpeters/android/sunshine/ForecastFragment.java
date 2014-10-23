@@ -1,6 +1,7 @@
 package com.ntpeters.android.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -122,10 +123,20 @@ public class ForecastFragment extends Fragment {
         }
 
         private String formatHighLows(double high, double low) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unit = prefs.getString(getString(R.string.pref_temp_key), getString(R.string.pref_temp_default));
+
+            String unitStr = "C";
+            if (!unit.equals(getString(R.string.pref_temp_default))) {
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+                unitStr = "F";
+            }
+
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
-            String highLowStr = roundedHigh + "/" + roundedLow;
+            String highLowStr = roundedHigh + "/" + roundedLow + " " + unitStr;
             return highLowStr;
         }
 

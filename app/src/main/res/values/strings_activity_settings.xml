@@ -6,5 +6,9 @@
     <string name="pref_location_name">Location</string>
     <string name="pref_location_key" translatable="false">location</string>
     <string name="pref_location_default" translatable="false">44124</string>
+    
+    <string name="pref_temp_name">Tempurature Units</string>
+    <string name="pref_temp_key" translatable="false">tempUnit</string>
+    <string name="pref_temp_default" translatable="false">metric</string>
 
 </resources>
