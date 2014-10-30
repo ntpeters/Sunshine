@@ -1,6 +1,7 @@
 package com.ntpeters.android.sunshine;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
 import android.util.Log;
@@ -42,6 +43,43 @@ public class TestDb  extends AndroidTestCase{
         assertTrue(locationRowId != -1);
         Log.d(LOG_TAG, "New row id: " + locationRowId);
 
-        
+        String[] columns = {
+                LocationEntry._ID,
+                LocationEntry.COLUMN_LOCATION_SETTING,
+                LocationEntry.COLUMN_CITY_NAME,
+                LocationEntry.COLUMN_COORD_LAT,
+                LocationEntry.COLUMN_COORD_LONG
+        };
+
+        Cursor cursor = db.query(
+                LocationEntry.TABLE_NAME,
+                columns,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            int locationIndex = cursor.getColumnIndex(LocationEntry.COLUMN_LOCATION_SETTING);
+            String location = cursor.getString(locationIndex);
+
+            int nameIndex = cursor.getColumnIndex(LocationEntry.COLUMN_CITY_NAME);
+            String name = cursor.getString(nameIndex);
+
+            int latIndex = cursor.getColumnIndex(LocationEntry.COLUMN_COORD_LAT);
+            double latitude = cursor.getDouble(latIndex);
+
+            int longIndex = cursor.getColumnIndex(LocationEntry.COLUMN_COORD_LONG);
+            double longitude = cursor.getDouble(longIndex);
+
+            assertEquals(testName, name);
+            assertEquals(testLocationSetting, location);
+            assertEquals(testLatitude, latitude);
+            assertEquals(testLongitude, longitude);
+        } else {
+            fail("No values returned!");
+        }
     }
 }
